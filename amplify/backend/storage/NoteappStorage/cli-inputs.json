@@ -1,0 +1,14 @@
+{
+  "resourceName": "NoteappStorage",
+  "policyUUID": "b0b20efe",
+  "bucketName": "awsamplifynoteapp0f782fb9fd0345b99e892ca2df3bf7",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}
