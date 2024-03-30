@@ -18,8 +18,9 @@ import { listNotes } from "../src/graphql/queries";
 import "./App.css";
 
 import awsconfig from "./amplifyconfiguration.json";
-import { Amplify, Storage } from "aws-amplify";
+import { Amplify } from "aws-amplify";
 import { generateClient } from "aws-amplify/api";
+import { uploadData, getUrl, remove } from 'aws-amplify/storage';
 
 Amplify.configure(awsconfig);
 
@@ -38,8 +39,9 @@ const App = ({ signOut }) => {
     await Promise.all(
       notesFromAPI.map(async (note) => {
         if (note.image) {
-          const url = await Storage.get(note.name);
-          note.image = url;
+          const url = await getUrl({key: `${note.id}.${note.image.split('.').pop()}`});
+          console.log(url);
+          note.image = url.url.href;
         }
         return note;
       })
@@ -48,32 +50,30 @@ const App = ({ signOut }) => {
   }
 
   async function createNote(event) {
-    const form = event.target;
-
     event.preventDefault();
-
-    const formData = new FormData(form);
+    const form = new FormData(event.target);
     const image = form.get("image");
     const data = {
-      name: formData.get("name"),
-      description: formData.get("description"),
-      image: image.name,
+      name: form.get("name"),
+      description: form.get("description"),
+      image: image.name
     };
-    if (!!data.image) await Storage.put(data.name, image);
-    await client.graphql({
+    const result = await client.graphql({
       query: createNoteMutation,
       variables: { input: data },
     });
-
-    await fetchNotes();
-
-    form.reset();
+    if (!!data.image) await uploadData({ 
+      key: `${result.data.createNote.id}.${image.name.split('.').pop()}`, 
+      data: image,
+    }).result;
+    fetchNotes();
+    event.target.reset();
   }
 
   async function deleteNote({ id, name }) {
     const newNotes = notes.filter((note) => note.id !== id);
     setNotes(newNotes);
-    await Storage.remove(name);
+    await remove({ key: id });
     await client.graphql({
       query: deleteNoteMutation,
       variables: { input: { id } },
