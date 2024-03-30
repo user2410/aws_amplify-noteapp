@@ -14,6 +14,9 @@
     "categories": {
       "auth": {
         "awsamplifynoteapp1946f423": {}
+      },
+      "api": {
+        "awsamplifynoteapp": {}
       }
     }
   }
